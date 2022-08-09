@@ -9,8 +9,7 @@ Servo esc;
 
 MPU6050 mpu(Wire);
 unsigned long timer = 0;
-  int servoPulseEle,servoPulseAil;
-
+int servoPulseEle,servoPulseAil;
 int ch1,ch2,ch3,ch4,ch5;
 int ch1pulse,ch2pulse,ch3pulse,ch4pulse,ch5pulse;
 void setup() {
@@ -24,9 +23,9 @@ void setup() {
   pinMode(10,INPUT);
   aileron.attach(23);
   //aileron2.attach(22);
-  elevator.attach(21);
-  rudder.attach(20);
-  esc.attach(14);
+  elevator.attach(20);
+  rudder.attach(21);
+ // esc.attach(14);
   byte status = mpu.begin();
   Serial.print(F("MPU6050 status: "));
   Serial.println(status);
@@ -37,7 +36,7 @@ void setup() {
   // mpu.upsideDownMounting = true; // uncomment this line if the MPU6050 is mounted upside-down
   mpu.calcOffsets(); // gyro and accelero
   Serial.println("Done!\n");
-  esc.writeMicroseconds(1000);
+ // esc.writeMicroseconds(1000);
 delay(5000);
 }
 
@@ -45,13 +44,13 @@ void loop() {
   mpu.update();
   
   if((millis()-timer)>10){ // print data every 10ms
-	Serial.print("X : ");
-	Serial.print(mpu.getAngleX());
-	Serial.print("\tY : ");
-	Serial.print(mpu.getAngleY());
-	Serial.print("\tZ : ");
-	Serial.println(mpu.getAngleZ());
-	timer = millis();  
+  Serial.print("X : ");
+  Serial.print(mpu.getAngleX());
+  Serial.print("\tY : ");
+  Serial.print(mpu.getAngleY());
+  Serial.print("\tZ : ");
+  Serial.println(mpu.getAngleZ());
+  timer = millis();  
   }
   ch1=pulseIn(5,HIGH,21000);
   ch2=pulseIn(6,HIGH,21000);
@@ -69,39 +68,36 @@ Serial.println(ch3pulse);
 Serial.println(ch4pulse);
 Serial.println(ch5pulse);
  if(mpu.getAngleX()<0){
-  // aileron2.write((ch1pulse)+((ypr[1] * 180/M_PI/3)));
-    aileron.write(90+((ch1pulse-90 )-(mpu.getAngleX())) );
+    aileron.write(90+((ch1pulse-90 )+(mpu.getAngleX())) );
            if((ch2pulse > 23 && ch2pulse < 157) && (ch4pulse > 23 && ch4pulse < 157)) //İki alici kanalindan da sinyal aliniyorsa
   {
   servoPulseEle = ((ch4pulse + ch2pulse) / 2); //Elevator servosu, iki girisin surelerinin toplamının yapisi
   servoPulseAil = ((ch4pulse + (180 - ch2pulse)) / 2); //Aileron servosu, Elevatorun ve ters cevrilmis aileronun surelerinin toplaminin yarisi
-  elevator.write(servoPulseEle+(mpu.getAngleY())); // Elevator Servo nesnesine bulunan degeri yaz.
-  rudder.write(servoPulseAil-(mpu.getAngleY())-(mpu.getAngleX())); // Aileron Servo nesnesine bulunan degeri yaz.
+  elevator.write(servoPulseEle-(mpu.getAngleY())+(mpu.getAngleX())-(ch1pulse-90)); // Elevator Servo nesnesine bulunan degeri yaz.
+  rudder.write(servoPulseAil+(mpu.getAngleY())-(ch1pulse-90)); // Aileron Servo nesnesine bulunan degeri yaz.
   } 
     if(mpu.getAngleY()<0){
       if((ch2pulse > 23 && ch2pulse < 157) && (ch4pulse > 23 && ch4pulse < 157)) //İki alici kanalindan da sinyal aliniyorsa
   {
   servoPulseEle = ((ch4pulse + ch2pulse) / 2); //Elevator servosu, iki girisin surelerinin toplamının yapisi
   servoPulseAil = ((ch4pulse + (180 - ch2pulse)) / 2); //Aileron servosu, Elevatorun ve ters cevrilmis aileronun surelerinin toplaminin yarisi
-  elevator.write(servoPulseEle+(mpu.getAngleY())); // Elevator Servo nesnesine bulunan degeri yaz.
-  rudder.write(servoPulseAil-(mpu.getAngleY())-(mpu.getAngleX())); // Aileron Servo nesnesine bulunan degeri yaz.
+  elevator.write(servoPulseEle-(mpu.getAngleY())+(mpu.getAngleX())-(ch1pulse-90)); // Elevator Servo nesnesine bulunan degeri yaz.
+  rudder.write(servoPulseAil+(mpu.getAngleY())-(ch1pulse-90)); // Aileron Servo nesnesine bulunan degeri yaz.
   } 
     
     }
     
 
-
     
     }else if(mpu.getAngleX()>0){
        
-        // aileron2.write(90+((ch1pulse-90 )+((ypr[1] * 180/M_PI/3))) );
-     aileron.write((ch1pulse)-((mpu.getAngleX())));
+     aileron.write((ch1pulse)+((mpu.getAngleX())));
                 if((ch2pulse > 23 && ch2pulse < 157) && (ch4pulse > 23 && ch4pulse < 157)) //İki alici kanalindan da sinyal aliniyorsa
   {
   servoPulseEle = ((ch4pulse + ch2pulse) / 2); //Elevator servosu, iki girisin surelerinin toplamının yapisi
   servoPulseAil = ((ch4pulse + (180 - ch2pulse)) / 2); //Aileron servosu, Elevatorun ve ters cevrilmis aileronun surelerinin toplaminin yarisi
-  elevator.write(servoPulseEle+(mpu.getAngleY())-(mpu.getAngleX())); // Elevator Servo nesnesine bulunan degeri yaz.
-  rudder.write(servoPulseAil-(mpu.getAngleY())); // Aileron Servo nesnesine bulunan degeri yaz.
+  elevator.write(servoPulseEle-(mpu.getAngleY())-(ch1pulse-90)); // Elevator Servo nesnesine bulunan degeri yaz.
+  rudder.write(servoPulseAil+(mpu.getAngleY())+(mpu.getAngleX())-(ch1pulse-90)); // Aileron Servo nesnesine bulunan degeri yaz.
   
   }
   if(mpu.getAngleY()>0){
@@ -109,14 +105,14 @@ Serial.println(ch5pulse);
   {
   servoPulseEle = ((ch4pulse + ch2pulse) / 2); //Elevator servosu, iki girisin surelerinin toplamının yapisi
   servoPulseAil = ((ch4pulse + (180 - ch2pulse)) / 2); //Aileron servosu, Elevatorun ve ters cevrilmis aileronun surelerinin toplaminin yarisi
- elevator.write(servoPulseEle+(mpu.getAngleY())-(mpu.getAngleX())); // Elevator Servo nesnesine bulunan degeri yaz.
-  rudder.write(servoPulseAil-(mpu.getAngleY())); // Aileron Servo nesnesine bulunan degeri yaz.
+ elevator.write(servoPulseEle-(mpu.getAngleY())-(ch1pulse-90)); // Elevator Servo nesnesine bulunan degeri yaz.
+  rudder.write(servoPulseAil+(mpu.getAngleY())+(mpu.getAngleX())-(ch1pulse-90)); // Aileron Servo nesnesine bulunan degeri yaz.
   } 
     
     }
   
   
       }
-            esc.write(ch3pulse);
+           // esc.write(ch3pulse);
 
 }
